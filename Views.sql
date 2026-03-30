@@ -57,6 +57,94 @@ SET SQL_SAFE_UPDATES=1;
 ## Also affect the view as Updated the amount
 SELECT * FROM view_one;
 
+#####################################################
+
+# PRACTICE
+
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    dept_id INT,
+    manager_id INT,
+    salary INT,
+    join_date DATE
+);
+
+INSERT INTO employees VALUES
+(1, 'Amit', 101, NULL, 80000, '2020-01-10'),
+(2, 'Neha', 102, 1, 60000, '2021-03-15'),
+(3, 'Ravi', 101, 1, 50000, '2022-06-20'),
+(4, 'Priya', 103, 2, 70000, '2021-07-11'),
+(5, 'Karan', 102, 2, 45000, '2023-02-05'),
+(6, 'Sneha', 103, 4, 65000, '2022-09-18');
+
+SELECT * FROM employees;
+
+CREATE TABLE departments (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(50)
+);
+
+INSERT INTO departments VALUES
+(101, 'IT'),
+(102, 'HR'),
+(103, 'Sales');
+
+SELECT * FROM departments;
+
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    city VARCHAR(50)
+);
+
+INSERT INTO customers VALUES
+(1, 'Raj', 'Mumbai'),
+(2, 'Simran', 'Delhi'),
+(3, 'Arjun', 'Pune'),
+(4, 'Meera', 'Nagpur');
+
+SELECT * FROM customers;
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    emp_id INT,
+    amount DECIMAL(10,2),
+    order_date DATE
+);
+
+INSERT INTO orders VALUES
+(101, 1, 2, 12000, '2024-01-10'),
+(102, 2, 3, 8000, '2024-01-15'),
+(103, 3, 4, 15000, '2024-02-01'),
+(104, 1, 2, 20000, '2024-02-10'),
+(105, 4, 5, 5000, '2024-02-20'),
+(106, 2, 6, 18000, '2024-03-05');
+
+SELECT * FROM orders;
+
+# Create a view to show: employee name department name
+
+CREATE VIEW name_view AS
+SELECT e.name, d.dept_name
+FROM employees e
+LEFT JOIN departments d
+ON e.dept_id = d.dept_id;
+
+SELECT * FROM name_view;
+
+# Create a view for employees earning more than 60,000.
+
+CREATE VIEW salary_view AS
+SELECT *
+FROM employees
+WHERE salary > 60000;
+
+SELECT * FROM salary_view;
+
+
+
 
 
 
