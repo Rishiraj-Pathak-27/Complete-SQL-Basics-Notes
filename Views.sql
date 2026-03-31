@@ -143,8 +143,217 @@ WHERE salary > 60000;
 
 SELECT * FROM salary_view;
 
+##############################################
 
+# VIEWS ASSIGNMENT
 
+# SCHEMAS
 
+# Student table
 
+CREATE TABLE students (
+ student_id INT PRIMARY KEY,
+ name VARCHAR(50),
+ dept VARCHAR(50),
+ marks INT
+);
+
+INSERT INTO students VALUES
+(1, 'Aman', 'Computer', 85),
+(2, 'Riya', 'Mechanical', 78),
+(3, 'Kabir', 'Computer', 90),
+(4, 'Sneha', 'Civil', 65),
+(5, 'Arjun', 'Mechanical', 72);
+
+SELECT * FROM students;
+
+# courses table
+
+CREATE TABLE courses (
+ course_id INT PRIMARY KEY,
+ course_name VARCHAR(50)
+);
+
+INSERT INTO courses VALUES
+(1, 'DBMS'),
+(2, 'Oprating Systems'),
+(3, 'Data Structures');
+
+SELECT * FROM courses;
+
+# enrollments table
+
+CREATE TABLE enrollments (
+ student_id INT,
+ course_id INT
+);
+
+INSERT INTO enrollments VALUES
+(1,1),
+(2,2),
+(3,1),
+(4,3),
+(5,2);
+
+SELECT * FROM enrollments;
+
+#############################################
+
+# 1) Create a view to show student name and marks.
+
+CREATE VIEW stu_view AS
+SELECT name, marks 
+FROM students;
+
+SELECT * FROM stu_view;
+
+# 2) Create a view to show students with marks greater than 80.
+
+CREATE VIEW stu_marks AS
+SELECT name,marks
+FROM students
+WHERE marks > 80;
+
+SELECT * FROM stu_marks;
+
+# 3) Create a view to show student name and course name.
+
+CREATE VIEW stu_name_course AS
+SELECT s.name, c.course_name
+FROM enrollments e
+LEFT JOIN students s
+ON e.student_id = s.student_id
+LEFT JOIN courses c
+ON e.course_id = c.course_id;
+
+SELECT * FROM stu_name_course;
+
+# 4) Create a view to show average marks.
+
+CREATE VIEW avg_marks AS
+SELECT AVG(marks) AS avg_marks
+FROM students;
+
+SELECT * FROM avg_marks;
+
+# 5) Create a view to show department wise student count.
+
+CREATE VIEW stu_count AS
+SELECT dept, COUNT(*) AS students_per_dept
+FROM students
+GROUP BY dept;
+
+SELECT * FROM stu_count;
+
+# 6) Create a view to show students enrolled in DBMS.
+
+CREATE VIEW stu_enroll_dbms AS
+SELECT s.name, c.course_name
+FROM enrollments e
+LEFT JOIN students s
+ON e.student_id = s.student_id
+LEFT JOIN courses c
+ON e.course_id = c.course_id
+WHERE c.course_name = "DBMS";
+
+SELECT * FROM stu_enroll_dbms;
+
+# 7) Create a view to show student name and number of courses enrolled.
+
+CREATE VIEW stu_courses_enroll AS
+SELECT s.name, COUNT(*) AS courses_enrolled
+FROM enrollments e
+LEFT JOIN students s
+ON e.student_id = s.student_id
+GROUP BY s.name;
+
+SELECT * FROM stu_courses_enroll;
+
+# 8) Create a view to show top 2 students based on marks.
+
+CREATE VIEW top_marks AS
+SELECT name, marks
+FROM students
+ORDER BY marks DESC
+LIMIT 2;
+
+SELECT * FROM top_marks;
+
+# 9) Create a view to show students from Computer department.
+
+CREATE VIEW dept_cs AS
+SELECT * 
+FROM students
+WHERE dept = "Computer";
+
+SELECT * FROM dept_cs;
+
+# 10) Create a view to show course name and number of students enrolled.
+
+CREATE VIEW stu_enrolled AS
+SELECT c.course_name, COUNT(*) AS students_enrolled_total
+FROM enrollments e
+LEFT JOIN courses c
+ON e.course_id = c.course_id
+GROUP BY c.course_name;
+
+SELECT * FROM stu_enrolled;
+
+# 11) Create a view to show students who scored above average marks.
+
+## this uses view as well as sub-query
+
+CREATE VIEW stu_above_avg_view AS 
+SELECT *
+FROM students
+WHERE marks > (SELECT AVG(marks)
+			   FROM students);
+               
+SELECT * FROM stu_above_avg_view;
+
+# 12) Create a view to show only students with marks greater than 70 using check option.
+
+CREATE VIEW high_marks_stu AS
+SELECT * 
+FROM students
+WHERE marks > 70
+WITH CHECK OPTION;
+
+SELECT * FROM high_marks_stu;
+
+# 13) Create a nested view (one view based on another).
+
+# view 1
+CREATE VIEW stu_details AS
+SELECT name, dept, marks
+FROM students;
+
+SELECT * FROM stu_details;
+
+# view 2 (nested)
+CREATE VIEW stu_name_dept AS
+SELECT name, dept
+FROM stu_details;
+
+SELECT * FROM stu_name_dept;
+
+# 14) Try updating data using a view and observe.
+
+SET SQL_SAFE_UPDATES = 0;
+
+UPDATE stu_details
+SET dept = "Civil"
+WHERE name = "Aman";
+
+SELECT * FROM students;
+
+# As I changed the dept of aman to civil from computer this change is reflected in original table also
+
+# 15) Explain what happens when base table data changes.
+
+UPDATE students
+SET marks = 65
+WHERE student_id = 1;
+
+# As here I have changed the marks of aman to 65 from 85 this has made change in both base table as well as derived table
 
