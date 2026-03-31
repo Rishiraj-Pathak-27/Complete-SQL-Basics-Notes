@@ -109,11 +109,18 @@ You can practice SQL using:
 │   ├── 📄 04_addadmin.sql
 │   ├── 📄 05_log_table.sql
 │   └── 📕 MySQL Handbook.pdf
+├── 📁 assignments
+│   ├── 📝 assignments.md
+│   ├── 📕 sql_assignment.pdf
+│   └── 📕 sql_views_assignment.pdf
 ├── 📄 1.mwb
 ├── 📄 Joins.sql
 ├── 📄 Keys.sql
 ├── 📕 MySQL Handbook.pdf
+├── 📄 SubQueries.sql
+├── 📄 Views.sql
 ├── 📄 aggregateFunctions.sql
+├── 📄 assignment.sql
 ├── 📄 classroom.sql
 ├── 📄 clauses.sql
 ├── 📄 college.sql
