@@ -337,4 +337,45 @@ HAVING SUM(o.order_value) > (SELECT AVG(total_spending) FROM
 
 SELECT * FROM orders;
 
-## 
+## Q17. Find drivers responsible for delayed deliveries and count delays.
+
+DESCRIBE drivers;
+DESCRIBE deliveries;
+
+SELECT d1.driver_id AS driver_id, d1.driver_Name AS driver_name, COUNT(d2.status) AS delay_counts
+FROM drivers d1
+JOIN deliveries d2
+ON d1.driver_id = d2.driver_id
+WHERE d2.status = "Delayed"
+GROUP BY d1.driver_id, d1.driver_name
+ORDER BY driver_id ASC;
+
+## Q18. Find warehouses where average delivery time exceeds company average.
+
+DESCRIBE warehouses;
+DESCRIBE deliveries;
+DESCRIBE orders;
+
+SELECT w.warehouse_id AS warehoue_id, w.warehouse_name AS warehouse_name, AVG(d.delivery_time_hours) AS avg_delivery_time
+FROM warehouses w
+JOIN orders o
+ON w.warehouse_id = o.warehouse_id
+JOIN deliveries d
+ON o.order_id = d.order_id
+GROUP BY w.warehouse_id, w.warehouse_name
+HAVING AVG(d.delivery_time_hours) > (
+	SELECT AVG(delivery_time_hours)
+    FROM deliveries
+);
+
+## Q19. Detect customers who have not placed any order in the last 30 days from their most recent order.
+
+SELECT * FROM orders;
+
+SELECT c.customer_id AS customer_id, c.customer_name AS customer_name,MAX(o.order_date) AS last_order_date
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.customer_name
+HAVING DATEDIFF((SELECT MAX(order_date) FROM orders),MAX(o.order_date)) > 30
+ORDER BY customer_id ASC;
