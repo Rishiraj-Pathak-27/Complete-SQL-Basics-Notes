@@ -157,4 +157,51 @@ SELECT * FROM bank_transactions;
 SELECT *,
 	   SUM(amount) OVER(PARTITION BY account_holder ORDER BY transaction_date) AS current_bal
 	   FROM bank_transactions;
+
+## 7. ROW_NUMBER()
+
+SELECT ROW_NUMBER() OVER(PARTITION BY student_name) AS row_no,
+    student_id, student_name, subject, marks
+	FROM exam_scores;
+    
+############################################
+
+## PRACTICE QUESTIONS
+
+-- Q1. Show each transaction along with the total amount transacted by that account holder.
+
+SELECT transaction_id, account_holder, amount,
+	   SUM(amount) OVER(PARTITION BY account_holder) AS total_amount
+       FROM bank;
        
+-- Q2. Show each transaction along with the average transaction amount for that account holder.
+
+SELECT transaction_id, account_holder, amount,
+	AVG(amount) OVER(PARTITION BY account_holder) AS avg_total
+    FROM bank;
+    
+-- Q3. Show each transaction along with the highest transaction amount made by that account holder.
+
+SELECT transaction_id, account_holder, amount,
+	MAX(amount) OVER(PARTITION BY account_holder) AS max_otal
+    FROM bank;
+
+-- Q4. Show each transaction along with the lowest transaction amount made by that account holder.
+
+SELECT transaction_id, account_holder, amount,
+	MIN(amount) OVER(PARTITION BY account_holder) AS min_total
+    FROM bank;
+    
+-- Q5. Show the total number of transactions performed by each account holder beside every row.
+
+SELECT transaction_id, account_holder, amount,
+	COUNT(*) OVER(PARTITION BY account_holder) AS total_count
+    FROM bank;
+    
+-- Q6. Calculate the running balance for each account holder ordered by transaction date.
+
+SELECT transaction_id, account_holder, amount,
+	SUM(amount) OVER(PARTITION BY account_holder ORDER BY transaction_date) AS total_count
+    FROM bank;
+
+SELECT * FROM exam_scores;
