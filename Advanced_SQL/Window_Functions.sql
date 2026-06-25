@@ -59,13 +59,17 @@ INSERT INTO exam_scores VALUES
 (110,'Sara','English',89),
 (110,'Sara','History',85);
 
-SELECT * FROM exam_scores;
-DESCRIBE exam_scores;
+SELECT * FROM escore;
+DESCRIBE escore;
+
+ALTER TABLE exam_scores
+RENAME TO escore;
+
 
 # If we want the sum of each subject total then normally we will use the group by but it will return only few attributes and records
 
 SELECT s.subject AS subject , SUM(s.marks) AS total_marks
-FROM exam_scores s
+FROM escore s
 GROUP BY s.subject;
 
 # But if we dont want to modify the table/schema so we will directly use the window function
@@ -80,7 +84,7 @@ GROUP BY s.subject;
 
 SELECT *,
 	   SUM(s.marks) OVER(PARTITION BY s.subject) AS subject_total
-       FROM exam_scores s;
+       FROM escore  s;
        
        
 ## 2. AVG()
@@ -89,7 +93,7 @@ SELECT *,
 		   AVG(marks) OVER(
 				PARTITION BY(subject)
            ) AS avg_marks
-	FROM exam_scores;
+	FROM escore;
     
 ## 3. COUNT()
 
@@ -97,7 +101,7 @@ SELECT *,
 		   COUNT(*) OVER(
 				PARTITION BY(subject)
 			) AS total_student_per_subject
-	FROM exam_scores;
+	FROM escore;
        
        
 ## 4. MIN()
@@ -106,7 +110,7 @@ SELECT *,
 		   MIN(marks) OVER(
 				PARTITION BY (subject)
             ) AS min_marks
-	FROM exam_scores;
+	FROM escore;
 
 ## 5. MAX()
 
@@ -114,7 +118,7 @@ SELECT *,
 		MAX(marks) OVER (
 				PARTITION BY(subject)
         ) AS max_marks
-	FROM exam_scores;
+	FROM escore;
     
 
 ## 6. Rolling Total
@@ -149,20 +153,20 @@ VALUES
 (6, 'Rahul', '2026-01-04', 'WITHDRAW', -300.00),
 (7, 'Rahul', '2026-01-06', 'DEPOSIT', 400.00);
 
-DESCRIBE bank_transactions;
-SELECT * FROM bank_transactions;
+DESCRIBE bank;
+SELECT * FROM bank;
 
 ## rolling total using SUM()
 
 SELECT *,
 	   SUM(amount) OVER(PARTITION BY account_holder ORDER BY transaction_date) AS current_bal
-	   FROM bank_transactions;
+	   FROM bank;
 
 ## 7. ROW_NUMBER()
 
 SELECT ROW_NUMBER() OVER(PARTITION BY student_name) AS row_no,
     student_id, student_name, subject, marks
-	FROM exam_scores;
+	FROM escore;
     
 ############################################
 
@@ -183,7 +187,7 @@ SELECT transaction_id, account_holder, amount,
 -- Q3. Show each transaction along with the highest transaction amount made by that account holder.
 
 SELECT transaction_id, account_holder, amount,
-	MAX(amount) OVER(PARTITION BY account_holder) AS max_otal
+	MAX(amount) OVER(PARTITION BY account_holder) AS max_total
     FROM bank;
 
 -- Q4. Show each transaction along with the lowest transaction amount made by that account holder.
@@ -203,5 +207,34 @@ SELECT transaction_id, account_holder, amount,
 SELECT transaction_id, account_holder, amount,
 	SUM(amount) OVER(PARTITION BY account_holder ORDER BY transaction_date) AS total_count
     FROM bank;
+    
+    
+##########################################################################################################################################
 
-SELECT * FROM exam_scores;
+CREATE TABLE emp(
+eid INT PRIMARY KEY,
+ename VARCHAR(20),
+dname VARCHAR(50),
+salary INT NOT NULL
+);
+
+INSERT INTO emp VALUES
+(101,"Mohan","Admin", 4000),
+(102,"Rajkumar","HR", 3000),
+(103,"Akbar","IT", 4000),
+(104,"Darwin","Finance", 6500),
+(105,"Rohit","HR", 3000),
+(106,"Rajesh","Finance", 5000),
+(107,"Preet","HR", 7000),
+(108,"Maryam","Admin", 4000);
+
+SELECT * FROM emp;
+
+SELECT dname AS dept_name, MAX(salary) AS max_salary_per_dept
+FROM emp
+GROUP BY dname;
+
+SELECT *,
+	MAX(salary) OVER(PARTITION BY dname) AS max_salary_per_dept
+FROM emp;
+
