@@ -208,8 +208,252 @@ SELECT transaction_id, account_holder, amount,
 	SUM(amount) OVER(PARTITION BY account_holder ORDER BY transaction_date) AS total_count
     FROM bank;
     
+
+##########################################################################################################################################
+    
+# Practice Questions
+
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    city VARCHAR(50),
+    signup_date DATE
+);
+
+INSERT INTO customers (customer_id, customer_name, city, signup_date) VALUES
+(1, 'Rohan Sharma', 'Mumbai', '2025-01-15'),
+(2, 'Priya Mehta', 'Mumbai', '2025-02-10'),
+(3, 'Amit Verma', 'Mumbai', '2025-03-05'),
+(4, 'Sneha Patil', 'Pune', '2025-01-20'),
+(5, 'Karan Joshi', 'Pune', '2025-02-14'),
+(6, 'Neha Kulkarni', 'Pune', '2025-04-01'),
+(7, 'Rahul Shah', 'Delhi', '2025-01-08'),
+(8, 'Ananya Rao', 'Delhi', '2025-03-18'),
+(9, 'Vikram Singh', 'Delhi', '2025-05-12'),
+(10, 'Arjun Nair', 'Bangalore', '2025-02-25'),
+(11, 'Meera Iyer', 'Bangalore', '2025-03-11'),
+(12, 'Aditya Kapoor', 'Bangalore', '2025-04-16'),
+(13, 'Ishita Jain', 'Hyderabad', '2025-01-30'),
+(14, 'Siddharth Das', 'Hyderabad', '2025-03-22'),
+(15, 'Pooja Reddy', 'Hyderabad', '2025-05-01');
+
+CREATE TABLE warehouses (
+    warehouse_id INT PRIMARY KEY,
+    warehouse_name VARCHAR(50),
+    city VARCHAR(50)
+);
+
+INSERT INTO warehouses (warehouse_id, warehouse_name, city) VALUES
+(101, 'Mumbai Central Warehouse', 'Mumbai'),
+(102, 'Mumbai East Warehouse', 'Mumbai'),
+(103, 'Pune Main Warehouse', 'Pune'),
+(104, 'Pune East Warehouse', 'Pune'),
+(105, 'Delhi North Warehouse', 'Delhi'),
+(106, 'Delhi South Warehouse', 'Delhi'),
+(107, 'Bangalore Central Warehouse', 'Bangalore'),
+(108, 'Bangalore South Warehouse', 'Bangalore'),
+(109, 'Hyderabad Main Warehouse', 'Hyderabad'),
+(110, 'Hyderabad East Warehouse', 'Hyderabad');
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    warehouse_id INT,
+    order_date DATE,
+    order_value DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+    FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id)
+);
+
+INSERT INTO orders
+(order_id, customer_id, warehouse_id, order_date, order_value) VALUES
+
+-- Mumbai
+(1001, 1, 101, '2025-01-05', 5000),
+(1002, 1, 101, '2025-02-10', 7000),
+(1003, 1, 102, '2025-03-15', 6000),
+
+(1004, 2, 101, '2025-01-12', 8000),
+(1005, 2, 102, '2025-02-18', 5000),
+(1006, 2, 102, '2025-04-05', 7000),
+
+(1007, 3, 102, '2025-01-20', 4000),
+(1008, 3, 101, '2025-03-22', 6000),
+(1009, 3, 102, '2025-05-10', 5000),
+
+-- Pune
+(1010, 4, 103, '2025-01-08', 9000),
+(1011, 4, 103, '2025-02-15', 4000),
+(1012, 4, 104, '2025-04-12', 6000),
+
+(1013, 5, 103, '2025-01-25', 7000),
+(1014, 5, 104, '2025-03-18', 8000),
+(1015, 5, 103, '2025-05-02', 5000),
+
+(1016, 6, 104, '2025-02-05', 3000),
+(1017, 6, 103, '2025-03-25', 5000),
+(1018, 6, 104, '2025-05-15', 4000),
+
+-- Delhi
+(1019, 7, 105, '2025-01-10', 10000),
+(1020, 7, 106, '2025-02-20', 7000),
+(1021, 7, 105, '2025-04-10', 8000),
+
+(1022, 8, 105, '2025-01-18', 6000),
+(1023, 8, 106, '2025-03-12', 9000),
+(1024, 8, 105, '2025-05-05', 7000),
+
+(1025, 9, 106, '2025-02-08', 5000),
+(1026, 9, 105, '2025-03-28', 6000),
+(1027, 9, 106, '2025-05-20', 9000),
+
+-- Bangalore
+(1028, 10, 107, '2025-01-14', 11000),
+(1029, 10, 108, '2025-03-05', 6000),
+(1030, 10, 107, '2025-04-18', 8000),
+
+(1031, 11, 107, '2025-02-10', 7000),
+(1032, 11, 108, '2025-03-20', 9000),
+(1033, 11, 108, '2025-05-12', 6000),
+
+(1034, 12, 108, '2025-01-22', 5000),
+(1035, 12, 107, '2025-04-05', 7000),
+(1036, 12, 108, '2025-05-25', 6000),
+
+-- Hyderabad
+(1037, 13, 109, '2025-01-16', 8000),
+(1038, 13, 109, '2025-02-28', 7000),
+(1039, 13, 110, '2025-04-15', 6000),
+
+(1040, 14, 109, '2025-01-30', 6000),
+(1041, 14, 110, '2025-03-10', 8000),
+(1042, 14, 109, '2025-05-18', 7000),
+
+(1043, 15, 110, '2025-02-12', 5000),
+(1044, 15, 109, '2025-03-30', 7000),
+(1045, 15, 110, '2025-05-22', 6000);
+
+CREATE TABLE drivers (
+    driver_id INT PRIMARY KEY,
+    driver_name VARCHAR(50),
+    experience_years INT
+);
+
+INSERT INTO drivers (driver_id, driver_name, experience_years) VALUES
+(201, 'Raj Malhotra', 5),
+(202, 'Suresh Yadav', 3),
+(203, 'Manoj Kumar', 7),
+(204, 'Vivek Rao', 2),
+(205, 'Deepak Singh', 6),
+(206, 'Nitin Patil', 4),
+(207, 'Akash Verma', 8),
+(208, 'Harish Gupta', 3);
+
+CREATE TABLE deliveries (
+    delivery_id INT PRIMARY KEY,
+    order_id INT,
+    driver_id INT,
+    delivery_time_hours DECIMAL(5,2),
+    status VARCHAR(20),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (driver_id) REFERENCES drivers(driver_id)
+);
+
+INSERT INTO deliveries
+(delivery_id, order_id, driver_id, delivery_time_hours, status) VALUES
+
+(5001, 1001, 201, 5.0, 'Delivered'),
+(5002, 1002, 202, 7.0, 'Delivered'),
+(5003, 1003, 201, 6.0, 'Delayed'),
+
+(5004, 1004, 203, 4.0, 'Delivered'),
+(5005, 1005, 204, 8.0, 'Delayed'),
+(5006, 1006, 203, 5.0, 'Delivered'),
+
+(5007, 1007, 202, 9.0, 'Delayed'),
+(5008, 1008, 205, 6.0, 'Delivered'),
+(5009, 1009, 202, 7.0, 'Delivered'),
+
+(5010, 1010, 206, 4.0, 'Delivered'),
+(5011, 1011, 206, 5.0, 'Delivered'),
+(5012, 1012, 207, 6.0, 'Delayed'),
+
+(5013, 1013, 206, 5.0, 'Delivered'),
+(5014, 1014, 207, 8.0, 'Delayed'),
+(5015, 1015, 206, 4.0, 'Delivered'),
+
+(5016, 1016, 208, 10.0, 'Delayed'),
+(5017, 1017, 208, 7.0, 'Delivered'),
+(5018, 1018, 207, 6.0, 'Delivered'),
+
+(5019, 1019, 201, 5.0, 'Delivered'),
+(5020, 1020, 202, 8.0, 'Delayed'),
+(5021, 1021, 201, 6.0, 'Delivered'),
+
+(5022, 1022, 203, 7.0, 'Delivered'),
+(5023, 1023, 204, 9.0, 'Delayed'),
+(5024, 1024, 203, 6.0, 'Delivered'),
+
+(5025, 1025, 205, 8.0, 'Delayed'),
+(5026, 1026, 205, 7.0, 'Delivered'),
+(5027, 1027, 204, 10.0, 'Delayed'),
+
+(5028, 1028, 201, 4.0, 'Delivered'),
+(5029, 1029, 202, 6.0, 'Delivered'),
+(5030, 1030, 201, 5.0, 'Delivered'),
+
+(5031, 1031, 203, 7.0, 'Delayed'),
+(5032, 1032, 204, 6.0, 'Delivered'),
+(5033, 1033, 203, 8.0, 'Delayed'),
+
+(5034, 1034, 205, 9.0, 'Delayed'),
+(5035, 1035, 205, 5.0, 'Delivered'),
+(5036, 1036, 206, 6.0, 'Delivered'),
+
+(5037, 1037, 207, 5.0, 'Delivered'),
+(5038, 1038, 208, 7.0, 'Delivered'),
+(5039, 1039, 207, 8.0, 'Delayed'),
+
+(5040, 1040, 208, 6.0, 'Delivered'),
+(5041, 1041, 207, 9.0, 'Delayed'),
+(5042, 1042, 208, 7.0, 'Delivered'),
+
+(5043, 1043, 205, 8.0, 'Delayed'),
+(5044, 1044, 206, 6.0, 'Delivered'),
+(5045, 1045, 205, 7.0, 'Delivered');
+
+SELECT * FROM customers;
+SELECT * FROM warehouses;
+SELECT * FROM orders;
+
+-- 1) Find each customer's total spending and the overall total revenue of the company in every row.
+
+SELECT customer_id, customer_name, total_spending,
+	SUM(total_spending) OVER() AS total_company_revenue
+FROM (
+SELECT c.customer_id, c.customer_name, SUM(o.order_value) AS total_spending
+FROM customers c
+JOIN orders o
+ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.customer_name) t;
+
+-- 2) Find each customer's total spending and their percentage contribution to total company revenue.
+
+SELECT customer_id, customer_name, total_spending, (total_spending / company_total_revenue) * 100 AS percentage_of_revenue,
+SUM(total_spending) OVER() AS company_total_revenue
+FROM (
+	SELECT c.customer_id, c.customer_name, SUM(o.order_value) AS total_spending
+    FROM customers c
+    JOIN orders o
+    ON c.customer_id=o.customer_id
+    GROUP BY c.customer_id, c.customer_name 
+) t;
+
+
+
     
 ##########################################################################################################################################
+
 
 CREATE TABLE emp(
 eid INT PRIMARY KEY,
@@ -234,7 +478,60 @@ SELECT dname AS dept_name, MAX(salary) AS max_salary_per_dept
 FROM emp
 GROUP BY dname;
 
+SELECT dname, AVG(salary) AS avg_salary
+FROM emp
+GROUP BY dname;
+
+-- Simple way using analytical/window function
+
+SELECT *,
+	MAX(salary) OVER() AS max_salary_per_dept
+FROM emp;
+
 SELECT *,
 	MAX(salary) OVER(PARTITION BY dname) AS max_salary_per_dept
 FROM emp;
 
+-- both
+
+SELECT *,
+		COUNT(*) OVER(PARTITION BY dname) AS total_count,
+		MIN(salary) OVER(PARTITION BY dname) AS min,
+		MAX(salary) OVER(PARTITION BY dname) AS max,
+        SUM(salary) OVER(PARTITION BY dname) AS sum,
+        AVG(salary) OVER(PARTITION BY dname) AS avg
+FROM emp;
+
+#######################################################################################################
+
+## RANKING BASED WINDOW FUNCTIONS
+
+# 1) ROW_NUMBER()
+
+SELECT e.*,
+	ROW_NUMBER() OVER(PARTITION BY dname ORDER BY eid) AS SrNo
+FROM emp AS e; 
+
+
+-- Fetch the first 2 employees from each department to join the company
+
+SELECT * FROM(
+SELECT e.*,
+	ROW_NUMBER() OVER(PARTITION BY dname ORDER BY eid) AS SrNo
+FROM emp AS e) AS x
+WHERE x.SrNo < 3;
+
+
+# 2) RANK()
+
+SELECT *,
+	RANK() OVER(PARTITION BY dname ORDER BY salary DESC) AS rnk
+FROM emp;
+
+SET SQL_SAFE_UPDATES=0;
+UPDATE emp
+SET salary = 3500
+WHERE ename = "Rohit";
+
+
+####################################################################
