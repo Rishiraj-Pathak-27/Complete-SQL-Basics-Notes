@@ -449,8 +449,6 @@ FROM (
     GROUP BY c.customer_id, c.customer_name 
 ) t;
 
-
-
     
 ##########################################################################################################################################
 
@@ -524,14 +522,68 @@ WHERE x.SrNo < 3;
 
 # 2) RANK()
 
-SELECT *,
-	RANK() OVER(PARTITION BY dname ORDER BY salary DESC) AS rnk
-FROM emp;
+SELECT e.*,
+	RANK() OVER(PARTITION BY e.dname ORDER BY e.salary DESC) AS emp_rank_dept
+FROM emp e;
+    
+DESCRIBE emp;
 
-SET SQL_SAFE_UPDATES=0;
-UPDATE emp
-SET salary = 3500
-WHERE ename = "Rohit";
+# 3) DENSE_RANK()
 
+SELECT e.*,
+	DENSE_RANK() OVER(PARTITION BY e.dname ORDER BY e.salary) AS dense_rnk
+FROM emp e;
+
+-- fetch first 2 ranks from this emp table
+
+SELECT e.*
+FROM 
+(
+	SELECT e.*,
+    DENSE_RANK()
+	OVER(
+		PARTITION BY e.dname
+		ORDER BY e.salary
+        ) AS dense_rnk
+	FROM emp e
+) e;
+
+# 4) LAG()
+
+-- 1st way to declare the lag() window function
+
+SELECT e.*,
+	LAG(e.salary) OVER() AS prev
+FROM emp e;
+
+-- dept wise
+
+SELECT e.*,
+	LAG(e.salary) OVER(PARTITION BY e.dname) AS prev
+FROM emp e;
+
+-- 2nd way to declare the lag() window function
+
+-- LAG(col_name, how much prev, value to be enter if null)
+
+SELECT e.*,
+	LAG(e.salary, 1, 0) OVER(PARTITION BY e.dname ORDER BY e.salary) AS prev
+FROM emp e;
+
+# 5) LEAD()
+
+-- 1st way to define LEAD() window function
+
+SELECT e.*,
+	LEAD(e.salary) OVER(PARTITION BY e.dname ORDER BY e.salary) AS next
+FROM emp e;
+    
+-- 2nd way to define LEAD() window function
+
+-- LEAD(col_name, how much next, default or any value like null)
+
+SELECT e.*,
+	LEAD(e.salary, 1, 0) OVER(PARTITION BY e.dname ORDER BY e.salary) AS next
+FROM emp e;
 
 ####################################################################

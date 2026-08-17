@@ -8,7 +8,6 @@ CREATE TABLE employees (
     salary INT
 );
 
-
 INSERT INTO employees
 (employee_id, employee_name, department, salary)
 VALUES
@@ -186,3 +185,117 @@ FROM (
         FROM employees e
     ) e
 WHERE e.rn < 3; 
+
+-- 22) Use of RANK() window function 
+
+SELECT e.*,
+	RANK() OVER(PARTITION BY e.department ORDER BY e.salary) AS rnk
+FROM employees e;
+
+-- top 2 ranks in each department
+
+SELECT e.*
+FROM (
+SELECT e.*,
+	RANK() OVER(PARTITION BY e.department ORDER BY e.salary DESC) AS rnk
+FROM employees e
+) e
+WHERE e.rnk < 3;
+
+-- 23) Use of DENSE_RANK() window function
+
+SELECT e.*,
+	RANK() OVER(PARTITION BY e.department ORDER BY e.salary) AS rnk,
+    DENSE_RANK() OVER(PARTITION BY e.department ORDER BY e.salary) AS dense_rnk,
+    ROW_NUMBER() OVER(PARTITION BY e.department ORDER BY e.salary) AS rn
+FROM employees e;
+
+-- assign first 2 records position/rank using dense_rank()
+
+SELECT e.*
+FROM (
+SELECT e.*,
+	DENSE_RANK() OVER(PARTITION BY e.department ORDER BY e.salary) AS dense_rnk
+FROM employees e
+) e
+WHERE e.dense_rnk < 3;
+
+-- 24) Use of LAG () window function
+
+-- way 1
+ 
+SELECT e.*,
+	LAG(e.salary) OVER(
+		PARTITION BY e.department
+		ORDER BY e.salary
+    ) AS prev
+FROM employees e;
+
+-- way 2 
+
+SELECT e.*,
+	LAG(e.salary, 2, 0) OVER(
+		PARTITION BY e.department
+        ORDER BY e.salary
+    ) AS prev
+FROM employees e;
+
+-- 25) Use of LEAD() window function
+
+-- way 1
+
+SELECT e.*,
+	LEAD(e.salary) OVER(
+				PARTITION BY e.department
+                ORDER BY e.salary) AS next
+FROM employees e;
+
+-- way 2
+
+SELECT e.*,
+	LEAD(e.salary, 2, 0) OVER(
+						PARTITION BY e.department
+                        ORDER BY e.salary 
+						) AS next
+FROM employees e;
+
+# Combine LAG() & LEAD()
+
+SELECT e.*,
+	LAG(e.salary) OVER(
+				  PARTITION BY e.department
+				  ORDER BY e.salary
+				) AS prev,
+	LEAD(e.salary) OVER(
+				   PARTITION BY e.department
+                   ORDER BY e.salary
+                ) AS next
+FROM employees e;
+
+-- EG. Fetch a query to display if the salary of an employee is higher, lower or equal to the previous employee
+
+SELECT e.*,
+	LAG(e.salary) OVER(
+				  PARTITION BY e.department	
+                  ORDER BY e.salary
+                  ) AS prev,
+	
+    CASE 
+    
+    WHEN e.salary > LAG(e.salary) OVER(
+				  PARTITION BY e.department	
+                  ORDER BY e.salary
+                  ) THEN 'Higher then previous employee salary'
+	
+	WHEN e.salary < LAG(e.salary) OVER(
+				  PARTITION BY e.department	
+                  ORDER BY e.salary
+                  ) THEN 'Less then previous employee salary'
+                  
+	WHEN e.salary = LAG(e.salary) OVER(
+				  PARTITION BY e.department	
+                  ORDER BY e.salary
+                  ) THEN 'Equal to previous employee salary'
+	END sal_range
+    
+FROM employees e;
