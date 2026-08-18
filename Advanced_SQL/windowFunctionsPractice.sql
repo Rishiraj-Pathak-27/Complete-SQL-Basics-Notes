@@ -299,3 +299,189 @@ SELECT e.*,
 	END sal_range
     
 FROM employees e;
+
+###############################################################################################################
+
+# Department Table
+
+CREATE TABLE departments (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(50)
+);
+
+INSERT INTO departments (department_id, department_name) VALUES
+(1, 'IT'),
+(2, 'HR'),
+(3, 'Sales'),
+(4, 'Finance');
+
+# Employees Table
+
+CREATE TABLE emp (
+    employee_id INT PRIMARY KEY,
+    employee_name VARCHAR(50),
+    department_id INT,
+    salary INT,
+    FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+INSERT INTO emp
+(employee_id, employee_name, department_id, salary)
+VALUES
+(101, 'Rahul', 1, 50000),
+(102, 'Priya', 1, 60000),
+(103, 'Amit', 1, 55000),
+(104, 'Vikram', 1, 60000),
+
+(105, 'Sneha', 2, 45000),
+(106, 'Karan', 2, 50000),
+(107, 'Neha', 2, 55000),
+(108, 'Riya', 2, 50000),
+
+(109, 'Rohan', 3, 40000),
+(110, 'Pooja', 3, 45000),
+(111, 'Arjun', 3, 50000),
+(112, 'Ankit', 3, 45000),
+
+(113, 'Meera', 4, 55000),
+(114, 'Suresh', 4, 65000),
+(115, 'Kavya', 4, 60000),
+(116, 'Nitin', 4, 65000);
+
+-- QUESTIONS
+
+-- 1) Total salary of the entire company for every employee.
+
+SELECT e.*,
+	SUM(e.salary) OVER() AS total_sal
+FROM emp e;
+
+-- 2) Average salary of the company for every employee.
+
+SELECT e.*,
+	AVG(e.salary) OVER() AS avg_sal
+FROM emp e;
+
+-- 3) Total salary of each department.
+
+SELECT e.*,
+	SUM(e.salary) OVER(PARTITION BY e.department_id) AS dept_wise_sal
+FROM emp e;
+
+-- 4) Average salary of each department.
+
+SELECT e.*,
+	AVG(e.salary) OVER(PARTITION BY e.department_id) AS dept_wise_avg
+FROM emp e;
+
+-- 5) Running total of company salary, lowest salary first.
+
+SELECT e.*,
+	SUM(e.salary) OVER(ORDER BY e.salary, e.employee_id, e.employee_name) AS running_total
+FROM emp e;
+
+-- 6) Running total of salary within each department.
+
+SELECT e.*,
+	SUM(e.salary) OVER(PARTITION BY e.department_id ORDER BY e.salary, e.employee_id, e.employee_name) AS running_total_dept
+FROM emp e;
+
+-- 7) Running average salary within each department.
+
+SELECT e.*,
+	AVG(e.salary) OVER(PARTITION BY e.department_id ORDER BY e.salary, e.employee_id, e.employee_name) AS running_avg_dept
+FROM emp e;
+
+-- 8) Rank all employees by salary, highest first.
+
+SELECT e.*,
+	RANK() OVER(ORDER BY e.salary DESC) AS rnk
+FROM emp e;
+
+-- 9) Rank employees within each department.
+
+SELECT e.*,
+	RANK() OVER(PARTITION BY e.department_id ORDER BY e.salary DESC) AS rnk
+FROM emp e;
+
+-- 10) Dense rank employees within each department.
+
+SELECT e.*,
+	DENSE_RANK() OVER(PARTITION BY e.department_id ORDER BY e.salary DESC) AS rnk
+FROM emp e;
+
+-- 11) Assign a unique row number within each department.
+
+SELECT e.*,
+	ROW_NUMBER() OVER(PARTITION BY e.department_id) AS row_num
+FROM emp e;
+
+-- 12) Find the highest-paid employee(s) in each department.
+
+SELECT e.*
+FROM (
+	SELECT e.*,
+		RANK() OVER(PARTITION BY e.department_id ORDER BY e.salary DESC) AS max
+	FROM emp e
+) e
+WHERE e.max < 2;
+
+-- 13) Find the top 2 salary ranks in each department, including ties.
+
+SELECT e.*
+FROM (
+	SELECT e.*,
+		DENSE_RANK() OVER(
+			PARTITION BY e.department_id
+            ORDER BY e.salary DESC
+        ) AS top_2_sal
+	FROM emp e
+) e
+WHERE e.top_2_sal < 3;
+
+-- 14) Create an employee salary report containing:
+-- employee_name
+-- department
+-- salary
+-- company_total_salary
+-- department_total_salary
+-- department_average_salary
+-- department_running_salary
+-- department_rank
+
+SELECT e.employee_name,
+	   d.department_id AS department,
+       d.department_name,
+       e.salary,
+       e.company_total_salary,
+       e.department_total_salary,
+       e.department_avg_salary,
+       e.department_running_salary,
+       e.department_rank
+FROM (
+	SELECT e.*,
+	SUM(e.salary) OVER() AS company_total_salary,
+    
+    SUM(e.salary) OVER(
+		PARTITION BY e.department_id
+	) AS department_total_salary,
+    
+    AVG(e.salary) OVER(
+		PARTITION BY e.department_id
+	) AS department_avg_salary,
+    
+    SUM(e.salary) OVER(
+		PARTITION BY e.department_id 
+        ORDER BY e.salary, e.employee_id, e.employee_name
+	) AS department_running_salary,
+    
+    RANK() OVER(
+		PARTITION BY e.department_id
+        ORDER BY e.salary DESC
+	) AS department_rank
+    FROM emp e
+) e
+JOIN departments d
+ON e.department_id=d.department_id;
+
+
