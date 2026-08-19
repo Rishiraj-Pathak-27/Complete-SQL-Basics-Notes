@@ -486,6 +486,10 @@ ON e.department_id=d.department_id;
 
 
 #############################################################################################################################
+## Scenario based questions
+
+-- Scenario 1
+
 
 -- Customers Table
 
@@ -596,7 +600,143 @@ JOIN customers c
 ON o.customer_id=c.customer_id;
 
 
+-- 6) Find the top 2 orders of every customer, including ties.
+
+SELECT c.customer_name, o.order_date, o.order_value, o.top_2_cust
+FROM (
+	SELECT *,
+		DENSE_RANK() OVER(
+			PARTITION BY o.customer_id
+            ORDER BY o.order_value
+		) AS top_2_cust
+	FROM orders o
+) o
+JOIN customers c
+ON o.customer_id=c.customer_id
+WHERE o.top_2_cust <= 2;
+
+-- 7) For every order, calculate its percentage contribution to total company revenue.
+
+SELECT c.customer_name,
+	   o.order_date,
+       o.order_value,
+       o.total_company_revenue,
+       (o.order_value / o.total_company_revenue) * 100 AS contribution_per_order
+FROM (
+	SELECT *,
+		SUM(o.order_value) OVER() AS total_company_revenue
+	FROM orders o
+) o
+JOIN customers c
+ON o.customer_id=c.customer_id;
+
+-- -----------------------------------------------------------------------------------------------
+
+-- Scenario 2
+
+CREATE TABLE drivers (
+    driver_id INT PRIMARY KEY,
+    driver_name VARCHAR(50),
+    city VARCHAR(50)
+);
+
+INSERT INTO drivers VALUES 
+(1, 'Ramesh', 'Mumbai'),
+(2, 'Suresh', 'Pune'),
+(3, 'Akash', 'Nagpur'),
+(4, 'Vikram', 'Mumbai'),
+(5, 'Rohit', 'Pune'),
+(6, 'Anil', 'Nagpur');
+
+CREATE TABLE deliveries (
+    delivery_id INT PRIMARY KEY,
+    driver_id INT,
+    delivery_date DATE,
+    delivery_time_hours DECIMAL(5,2),
+    delivery_value DECIMAL(10,2),
+    status VARCHAR(20),
+    FOREIGN KEY (driver_id) REFERENCES drivers(driver_id)
+);
+
+INSERT INTO deliveries VALUES 
+(201, 1, '2026-01-05', 4.5, 5000, 'Delivered'),
+(202, 2, '2026-01-06', 6.0, 7000, 'Delayed'),
+(203, 1, '2026-01-10', 3.5, 4000, 'Delivered'),
+(204, 3, '2026-01-12', 5.0, 8000, 'Delivered'),
+(205, 4, '2026-01-15', 7.0, 6000, 'Delayed'),
+(206, 2, '2026-01-18', 4.0, 5000, 'Delivered'),
+(207, 5, '2026-01-20', 5.5, 9000, 'Delivered'),
+(208, 3, '2026-01-22', 4.0, 6000, 'Delivered'),
+(209, 1, '2026-01-25', 6.0, 7000, 'Delayed'),
+(210, 6, '2026-01-28', 3.0, 5000, 'Delivered'),
+(211, 4, '2026-02-02', 5.5, 7000, 'Delivered'),
+(212, 5, '2026-02-05', 4.5, 6000, 'Delayed');
 
 
+## Questions
+
+-- 1) Show every delivery along with the total value delivered by that driver.
+
+SELECT d1.driver_name,
+	   d1.city, 
+       d2.delivery_date, 
+       d2.delivery_time_hours,
+       d2.delivery_value,
+       d2.status, 
+       d2.total_values
+
+FROM (
+	SELECT *,
+		SUM(d2.delivery_value) OVER() AS total_values
+	FROM deliveries d2
+) d2
+JOIN drivers d1
+ON d2.driver_id=d1.driver_id;
+
+-- 2) Show each delivery and the driver's average delivery time.
+
+SELECT *,
+	AVG(d.delivery_time_hours) OVER(
+		PARTITION BY d.driver_id
+	) AS avg_delivery_time
+FROM deliveries d;
+
+-- 3) Calculate each driver's running delivery value ordered by delivery_date.
+
+DESCRIBE deliveries;
+SELECT d1.driver_name,
+	   d2.delivery_date,
+       d2.delivery_time_hours,
+       d2.delivery_value,
+       d2.status,
+       d2.running_delivery_value
+FROM (
+	SELECT *,
+		SUM(d2.delivery_value) OVER(
+			PARTITION BY d2.driver_id
+            ORDER BY d2.delivery_value
+            ) AS running_delivery_value
+	FROM deliveries d2
+) d2
+JOIN drivers d1
+ON d2.driver_id=d1.driver_id;
+
+-- 4) Rank drivers based on their total delivery value, highest first.
 
 
+SELECT driver_name,
+       total_delivery_value,
+		RANK() OVER(
+			ORDER BY total_delivery_value DESC
+		) AS rnk
+FROM (
+	     SELECT DISTINCT
+			   d1.driver_id,
+			   d1.driver_name,
+			SUM(d2.delivery_value) OVER(
+				PARTITION BY d2.driver_id
+			) AS total_delivery_value
+FROM drivers d1
+JOIN deliveries d2
+ON d1.driver_id=d2.driver_id
+) t;
