@@ -485,3 +485,118 @@ JOIN departments d
 ON e.department_id=d.department_id;
 
 
+#############################################################################################################################
+
+-- Customers Table
+
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY,
+    customer_name VARCHAR(50),
+    city VARCHAR(50)
+);
+
+INSERT INTO customers VALUES 
+(1, 'Rahul', 'Mumbai'),
+(2, 'Priya', 'Pune'),
+(3, 'Amit', 'Nagpur'),
+(4, 'Sneha', 'Mumbai'),
+(5, 'Karan', 'Pune'),
+(6, 'Neha', 'Nagpur');
+
+-- Orders Table
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    order_value DECIMAL(10,2),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+
+INSERT INTO orders VALUES 
+(101, 1, '2026-01-05', 5000),
+(102, 2, '2026-01-08', 7000),
+(103, 1, '2026-01-15', 3000),
+(104, 3, '2026-01-20', 9000),
+(105, 4, '2026-01-25', 4000),
+(106, 2, '2026-02-03', 5000),
+(107, 5, '2026-02-10', 8000),
+(108, 3, '2026-02-15', 6000),
+(109, 1, '2026-02-20', 7000),
+(110, 6, '2026-02-25', 5000),
+(111, 4, '2026-03-02', 6000),
+(112, 5, '2026-03-10', 4000);
+
+
+-- 1) Find every order along with the total amount spent by that customer.
+
+SELECT c.customer_name, o.order_date, o.order_value , o.customer_total_spending AS customer_total_spending
+FROM (
+	SELECT *,
+		SUM(o.order_value) OVER(PARTITION BY o.customer_id) AS customer_total_spending
+        FROM orders o
+) o
+JOIN customers c
+ON o.customer_id=c.customer_id;
+
+-- 2) Show every order and the average order value of that customer.
+
+SELECT c.customer_name, o.order_date, o.order_value, o.customer_avg_spending AS customer_avg_spending
+FROM (
+		SELECT *,
+			AVG(o.order_value) OVER(PARTITION BY o.customer_id) AS customer_avg_spending
+		FROM orders o
+    ) o
+JOIN customers c
+ON o.customer_id=c.customer_id;
+
+-- 3) For every customer, calculate their running spending based on order date.
+
+SELECT c.customer_name, o.order_date, o.order_value, o.running_spending AS running_spending
+FROM (
+	SELECT *,
+		SUM(o.order_value) OVER(PARTITION BY o.customer_id ORDER BY o.order_date) AS running_spending
+		FROM orders o
+) o
+JOIN customers c
+ON o.customer_id=c.customer_id;
+
+-- 4) Rank each customer's orders from highest-value order to lowest-value order.
+
+SELECT c.customer_name, 
+	   o.order_date,
+       o.order_value,
+       o.order_rank AS order_rank
+FROM (
+		SELECT *,
+			RANK() OVER(
+				PARTITION BY o.customer_id
+				ORDER BY o.order_value DESC
+			) AS order_rank
+		FROM orders o
+) o
+JOIN customers c
+ON o.customer_id=c.customer_id; 
+
+-- 5) Find the highest-value order for every customer.
+
+SELECT c.customer_name,
+	   o.order_date, 
+       o.order_value,
+       o.max_order_per_customer
+FROM (
+		SELECT *,
+			MAX(o.order_value) OVER(
+				PARTITION BY o.customer_id
+                ORDER BY o.order_value DESC
+			) AS max_order_per_customer
+		FROM orders o
+) o
+JOIN customers c
+ON o.customer_id=c.customer_id;
+
+
+
+
+
+
