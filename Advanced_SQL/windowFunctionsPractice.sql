@@ -723,20 +723,70 @@ ON d2.driver_id=d1.driver_id;
 
 -- 4) Rank drivers based on their total delivery value, highest first.
 
-
-SELECT driver_name,
-       total_delivery_value,
-		RANK() OVER(
-			ORDER BY total_delivery_value DESC
-		) AS rnk
+SELECT driver_name, 
+	   total_delivery_time,
+       RANK() OVER(
+			ORDER BY total_delivery_time DESC
+	   ) AS rnk
 FROM (
-	     SELECT DISTINCT
-			   d1.driver_id,
-			   d1.driver_name,
-			SUM(d2.delivery_value) OVER(
+	SELECT DISTINCT
+		   d1.driver_id,
+           d1.driver_name,
+           SUM(d2.delivery_value) OVER(
 				PARTITION BY d2.driver_id
-			) AS total_delivery_value
-FROM drivers d1
-JOIN deliveries d2
-ON d1.driver_id=d2.driver_id
+		   ) AS total_delivery_time
+	FROM drivers d1
+    JOIN deliveries d2
+    ON d1.driver_id=d2.driver_id
 ) t;
+
+-- 5) Rank each driver's deliveries from fastest to slowest.
+
+SELECT d1.driver_name,
+	   d2.delivery_id,
+	   d2.delivery_time_hours,
+       d2.rnk
+FROM (
+	SELECT *,
+		RANK() OVER(
+				PARTITION BY d2.driver_id
+                ORDER BY d2.delivery_time_hours
+		) AS rnk
+	FROM deliveries d2
+) d2
+JOIN drivers d1
+ON d2.driver_id=d1.driver_id;
+
+-- 6) Find each driver's top 2 deliveries by delivery_value. Include ties.
+
+SELECT d1.driver_name,
+	   d2.delivery_id,
+	   d2.delivery_time_hours,
+       d2.delivery_value,
+       d2.rnk
+FROM (
+SELECT *,
+	RANK() OVER(
+			PARTITION BY d2.driver_id
+            ORDER BY d2.delivery_value DESC) AS rnk
+    FROM deliveries d2
+) d2
+JOIN drivers d1
+ON d2.driver_id=d1.driver_id
+WHERE d2.rnk <= 2;
+
+-- 7) Delivery Time Compared to Driver Average
+
+SELECT d1.driver_name,
+       d2.delivery_id,
+       d2.delivery_time_hours,
+       d2.delivery_avg_time,
+       d2.delivery_time_hours - d2.delivery_avg_time AS difference
+FROM (
+	SELECT *,
+		AVG(d2.delivery_time_hours) OVER(
+			PARTITION BY d2.driver_id) AS delivery_avg_time
+	FROM deliveries d2
+) d2
+JOIN drivers d1
+ON d2.driver_id=d1.driver_id;
