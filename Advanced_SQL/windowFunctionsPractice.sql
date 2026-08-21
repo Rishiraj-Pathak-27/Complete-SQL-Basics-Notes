@@ -790,3 +790,121 @@ FROM (
 ) d2
 JOIN drivers d1
 ON d2.driver_id=d1.driver_id;
+
+-- ----------------------------------------------------------------------------------------------------
+
+-- Scenario 3 (Warehouse Inventory)
+
+CREATE TABLE inventory (
+    inventory_id INT PRIMARY KEY,
+    warehouse VARCHAR(50),
+    product VARCHAR(50),
+    stock INT,
+    stock_value DECIMAL(10,2),
+    last_updated DATE
+);
+
+INSERT INTO inventory VALUES
+(301, 'Mumbai', 'Laptop', 20, 1200000, '2026-01-05'),
+(302, 'Mumbai', 'Phone', 50, 750000, '2026-01-06'),
+(303, 'Mumbai', 'Tablet', 30, 450000, '2026-01-07'),
+(304, 'Pune', 'Laptop', 15, 900000, '2026-01-08'),
+(305, 'Pune', 'Phone', 60, 900000, '2026-01-09'),
+(306, 'Pune', 'Tablet', 25, 375000, '2026-01-10'),
+(307, 'Nagpur', 'Laptop', 10, 600000, '2026-01-11'),
+(308, 'Nagpur', 'Phone', 40, 600000, '2026-01-12'),
+(309, 'Nagpur', 'Tablet', 20, 300000, '2026-01-13'),
+(310, 'Mumbai', 'Monitor', 25, 500000, '2026-01-14'),
+(311, 'Pune', 'Monitor', 30, 600000, '2026-01-15'),
+(312, 'Nagpur', 'Monitor', 15, 300000, '2026-01-16');
+
+SELECT * FROM inventory;
+
+-- 1) Show each product and the total inventory value of its warehouse.
+
+SELECT i.warehouse,
+	   i.stock,
+       i.product,
+       i.stock_value,
+		SUM(i.stock_value) OVER(
+			PARTITION BY i.warehouse
+        ) AS total_inventory_value
+FROM inventory i;
+
+-- 2) Show each product and the average stock of that product across all warehouses.
+
+SELECT i.warehouse,
+       i.product,
+       i.stock,
+       i.stock_value,
+	   AVG(i.stock) OVER(
+			PARTITION BY i.product
+	   ) AS avg_stock
+FROM inventory i;
+	
+-- 3) Rank products within each warehouse based on stock_value, highest first.
+
+SELECT i.warehouse,
+	   i.product,
+       i.stock,
+       i.stock_value,
+       RANK() OVER(
+			PARTITION BY i.warehouse
+            ORDER BY i.stock_value DESC
+       ) AS rnk
+FROM inventory i;
+
+-- 4) Find the top 2 products in each warehouse by stock_value, including ties.
+
+SELECT i.warehouse,
+       i.product,
+       i.stock,
+       i.stock_value,
+       i.top_2_products
+FROM (
+	SELECT *,
+	   RANK() OVER(
+			PARTITION BY i.warehouse
+            ORDER BY i.stock_value
+       ) AS top_2_products
+FROM inventory i
+) i
+WHERE i.top_2_products <= 2;
+
+-- 5) Within each warehouse, calculate running inventory value ordered by last_updated.
+
+SELECT i.warehouse,
+	   i.product,
+       i.stock,
+       i.last_updated,
+       i.stock_value,
+       SUM(i.stock_value) OVER(
+			PARTITION BY i.warehouse
+            ORDER BY i.last_updated
+       ) AS running_inventory_sum
+FROM inventory i;
+
+-- 6) For every product, calculate its percentage contribution to the warehouse's total stock value.
+
+# contribution = stock_value / warehouse_inventory_total_revenue × 100
+
+SELECT i.warehouse,
+	   i.product,
+       i.stock,
+       i.stock_value,
+       i.last_updated,
+       i.stock_value / i.warehouse_total_stock * 100 AS contribution
+FROM (
+		SELECT *,
+       SUM(i.stock) OVER(
+			PARTITION BY i.product
+	   ) AS warehouse_total_stock
+       FROM inventory i
+) i;
+
+
+       
+       
+
+
+
