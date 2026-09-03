@@ -3,7 +3,6 @@
 -- Write a solution to get the names of products that have at least 100 units ordered in February 2020 and their amount.
 -- Return the result table in any order.
 
-
 -- method 1
 
 -- SELECT p.product_name AS product_name,
