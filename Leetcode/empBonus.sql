@@ -6,8 +6,7 @@
 -- Return the result table in any order.
 -- The result format is in the following example.
 
-SELECT e.name AS name,
-       b.bonus AS bonus
+SELECT e.name AS name, b.bonus AS bonus
 FROM Employee e
 LEFT JOIN Bonus b
 ON e.empId=b.empId
